@@ -14,7 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 1. 清理空间 (必需，防止构建中断)
+      # 1. 清理空间
       - name: Free Disk Space
         uses: jlumbroso/free-disk-space@main
         with:
@@ -26,8 +26,7 @@ jobs:
           docker-images: true
           swap-storage: true
 
-      # 2. 设置 Java 17 (Android SDK 需要)
-      # 这一步会自动配置 JAVA_HOME，不需要再用 apt 安装 jdk 了
+      # 2. 设置 Java 17
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -40,7 +39,7 @@ jobs:
         with:
           python-version: '3.10'
 
-      # 4. 安装系统依赖 (已修正拼写，并移除了冗余的 jdk)
+      # 4. 安装系统依赖
       - name: Install System Dependencies
         run: |
           sudo apt-get update
@@ -58,19 +57,18 @@ jobs:
             libtool \
             zlib1g-dev
 
-      # 5. 安装 Buildozer
+      # 5. 安装 Buildozer 和 指定版本的 Cython
+      # [关键修复] 强制使用 Cython < 3，防止编译 Kivy 时报错
       - name: Install Buildozer
         run: |
           pip install --upgrade pip
-          pip install buildozer cython colorama
+          pip install buildozer "cython<3" colorama
 
       # 6. 开始打包
-      # 首次运行会自动下载 Android SDK/NDK，比较慢，请耐心等待
       - name: Build with Buildozer
         run: |
           yes | buildozer android debug
         env:
-          # 允许使用测试域名 (org.elderly) 避免报错
           BUILDOZER_ALLOW_ORG_TEST_DOMAIN: 1
 
       # 7. 上传结果
