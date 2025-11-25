@@ -8,28 +8,76 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # 使用 Ubuntu 22.04，目前对 Android 构建支持最稳定
+    runs-on: ubuntu-22.04
 
     steps:
+      # 1. 拉取代码
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2. 清理磁盘空间 (Android SDK/NDK 非常大，防止空间不足报错)
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
+      # 3. 设置 Java 环境 (Android SDK 必需)
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 4. 设置 Python 环境
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      # 5. 安装系统级依赖库 (Buildozer 编译需要的 Linux 库)
+      - name: Install System Dependencies
         run: |
-          pip install buildozer cython git+https://github.com/kivy/python-for-android.git
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libltdl-dev \
+            libffi-dev \
+            libssl-dev \
+            python3-dev \
+            git \
+            zip \
+            unzip \
+            autoconf \
+            autotools-dev \
+            libtool \
+            zlib1g-dev \
+            openjd-17-jdk
 
+      # 6. 安装 Buildozer 和 Python 依赖
+      - name: Install Buildozer
+        run: |
+          pip install --upgrade pip
+          pip install buildozer cython
+          # 也可以安装 colorama 让日志好看点，非必需
+          pip install colorama
+
+      # 7. 开始打包 (核心步骤)
+      # 使用 'yes |' 自动同意 Android SDK 的 License 协议，防止卡住
       - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
-        with:
-          command: buildozer android debug
-          buildozer_version: master
+        run: |
+          yes | buildozer android debug
+        env:
+          # 允许使用测试域名 (org.elderly)
+          BUILDOZER_ALLOW_ORG_TEST_DOMAIN: 1
 
+      # 8. 上传生成的 APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
