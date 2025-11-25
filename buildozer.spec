@@ -4,21 +4,17 @@ package.name = medical_helper
 package.domain = org.elderly
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,otf,ttf,ini,xml
-version = 1.0.0
+version = 1.0.6
 
 # -------------------------------------------------------------------------
-# 🏆 依赖列表 (保持纯净版)
+# 🏆 依赖列表 (Kivy 2.3.0 版)
+# 1. 升级 kivy==2.3.0 (配合 Cython 3，满足 KivyMD 2.0 要求)
+# 2. 保持移除 pillow/requests (使用纯 Python 方案)
 # -------------------------------------------------------------------------
-requirements = python3,kivy==2.2.1,https://github.com/kivymd/KivyMD/archive/master.zip,materialyoucolor,asynckivy,asyncgui,plyer,android,jnius,libffi
+requirements = python3,kivy==2.3.0,https://github.com/kivymd/KivyMD/archive/master.zip,materialyoucolor,asynckivy,asyncgui,plyer,android,jnius,libffi
 
-# -------------------------------------------------------------------------
-# ⚠️ 关键修复：注释掉自定义图标
-# 因为你的仓库里可能缺少这两个文件，导致打包最后一步失败。
-# 注释后将使用 Kivy 默认图标，保证构建成功。
-# -------------------------------------------------------------------------
-# presplash.filename = %(source.dir)s/assets/presplash.png
-# icon.filename = %(source.dir)s/assets/icon.png
-
+presplash.filename = %(source.dir)s/assets/presplash.png
+icon.filename = %(source.dir)s/assets/icon.png
 orientation = portrait
 fullscreen = 0
 android.presplash_color = #FFFFFF
