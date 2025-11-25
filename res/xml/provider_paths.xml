@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 允许访问应用私有目录下的 files 文件夹 -->
+    <external-files-path name="my_images" path="." />
+    <!-- 允许访问外部存储根目录 (作为备用) -->
+    <external-path name="external_files" path="." />
+</paths>
