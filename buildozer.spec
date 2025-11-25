@@ -21,7 +21,8 @@ version = 1.0.1
 # (list) Application requirements
 # 关键修正：必须使用 GitHub 链接获取 KivyMD 2.0，否则手机上会闪退
 # (list) Application requirements
-requirements = python3,kivy==2.3.0,https://github.com/kivymd/KivyMD/archive/master.zip,materialyoucolor,pillow,sqlite3,plyer,android,jnius
+# (list) Application requirements
+requirements = python3,kivy==2.3.0,https://github.com/kivymd/KivyMD/archive/master.zip,materialyoucolor,asynckivy,pillow,sqlite3,plyer,android,jnius
 
 # (str) Custom source folders for requirements
 # requirements.source.kivymd = ../../kivymd
