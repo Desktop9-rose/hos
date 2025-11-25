@@ -57,12 +57,12 @@ jobs:
             libtool \
             zlib1g-dev
 
-      # 5. 安装 Buildozer 和 指定版本的 Cython
-      # [关键修复] 强制使用 Cython < 3，防止编译 Kivy 时报错
+      # 5. 安装 Buildozer 和 Cython
+      # 【关键修正】移除 "cython<3" 限制。Kivy 2.3.0 需要 Cython 3.0+
       - name: Install Buildozer
         run: |
           pip install --upgrade pip
-          pip install buildozer "cython<3" colorama
+          pip install buildozer cython colorama
 
       # 6. 开始打包
       - name: Build with Buildozer
