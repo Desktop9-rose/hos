@@ -16,17 +16,14 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,otf,ttf
 
 # (str) Application versioning (method 1)
-version = 1.0.0
+version = 1.0.1
 
 # (list) Application requirements
-# comma separated e.g. requirements = sqlite3,kivy
-# 关键修正：
-# 1. 使用 https://github.com/kivymd/KivyMD/archive/master.zip 以获取 KivyMD 2.0 (适配代码中的 MDButton)
-# 2. 包含 pillow (图片处理), plyer (功能调用), sqlite3 (数据库)
-requirements = python3,kivy==2.3.0,https://github.com/kivymd/KivyMD/archive/master.zip,pillow,sqlite3,plyer,android,jnius
+# 关键修正：必须使用 GitHub 链接获取 KivyMD 2.0，否则手机上会闪退
+# (list) Application requirements
+requirements = python3,kivy==2.3.0,https://github.com/kivymd/KivyMD/archive/master.zip,materialyoucolor,pillow,sqlite3,plyer,android,jnius
 
 # (str) Custom source folders for requirements
-# Sets custom source for any requirements with recipes
 # requirements.source.kivymd = ../../kivymd
 
 # (str) Presplash of the application
@@ -57,7 +54,6 @@ fullscreen = 0
 android.presplash_color = #FFFFFF
 
 # (list) Permissions
-# 申请必要的权限
 android.permissions = CAMERA,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE,INTERNET,RECORD_AUDIO
 
 # (int) Target Android API, should be as high as possible.
@@ -85,14 +81,9 @@ android.minapi = 21
 # android.ant_path =
 
 # (bool) If True, then skip trying to update the Android sdk
-# This can be useful to avoid excess Internet downloads or save time
-# when an update is due and you just want to test/build your package
 # android.skip_update = False
 
-# (bool) If True, then automatically accept SDK license
-# agreements. This is intended for automation only. If set to False,
-# the default, you will be shown the license when first running
-# buildozer.
+# (bool) If True, then automatically accept SDK license agreements.
 android.accept_sdk_license = True
 
 # (str) Android entry point, default is ok for Kivy-based app
@@ -105,19 +96,15 @@ android.accept_sdk_license = True
 # android.gradle_build_report = False
 
 # (list) List of Java .jar files to add to the libs so that pyjnius can access
-# their classes. Don't skip.
 # android.add_jars = foo.jar,bar.jar
 
-# (list) List of Java files to add to the android project (can be java or a
-# directory containing the files)
+# (list) List of Java files to add to the android project
 # android.add_src =
 
-# (list) Android AAR archives to add (currently works only with sdl2_gradle
-# bootstrap)
+# (list) Android AAR archives to add
 # android.add_aars =
 
-# (list) Gradle dependencies to add (currently works only with sdl2_gradle
-# bootstrap)
+# (list) Gradle dependencies to add
 # android.gradle_dependencies =
 
 # (list) Java classes to add as activities to the manifest.
@@ -142,8 +129,6 @@ android.allow_backup = True
 # android.backup_rules =
 
 # (str) If you need to insert variables into your AndroidManifest.xml file,
-# you can do so with the manifestPlaceholders property.
-# This property takes a map of key-value pairs.
 # android.manifest_placeholders = [:]
 
 # (bool) disables the compilation of py to pyc/pyo (True = no compilation)
@@ -189,7 +174,6 @@ ios.kivy_ios_url = https://github.com/kivy/kivy-ios
 ios.kivy_ios_branch = master
 
 # (str) Name of the certificate to use for signing the debug version
-# Get a list of available identities: buildozer ios list_identities
 # ios.codesign.debug = "iPhone Developer: <lastname> <firstname> (<hexstring>)"
 
 # (str) Name of the certificate to use for signing the release version
@@ -209,18 +193,3 @@ warn_on_root = 1
 
 # (str) Path to build output storage, absolute or relative to spec file
 # bin_dir = ./bin
-
-#    -----------------------------------------------------------------------------
-#    List as sections
-#
-#    You can define all the "list" as [section:name].
-#    Each line will be considered as a option to the list.
-#    Let's take [app] / requirements. Instead of describing them in the
-#    same line, you can use:
-#
-#    [app:requirements]
-#    sqlite3
-#    kivy
-#    libffi
-#    ...
-#
