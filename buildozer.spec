@@ -13,18 +13,18 @@ package.domain = org.elderly
 source.dir = .
 
 # (list) Source files to include (let empty to include all the files)
-source.include_exts = py,png,jpg,kv,atlas,otf,ttf
+# 关键修正：添加 ini 以便打包 config.ini，添加 xml 以便打包资源
+source.include_exts = py,png,jpg,kv,atlas,otf,ttf,ini,xml
 
 # (str) Application versioning (method 1)
-version = 1.0.1
+version = 1.0.0
 
 # (list) Application requirements
-# 关键修正：必须使用 GitHub 链接获取 KivyMD 2.0，否则手机上会闪退
-# (list) Application requirements
-# (list) Application requirements
-# (list) Application requirements
-# 关键修正：显式添加 asyncgui (asynckivy 的依赖)，防止构建失败
-requirements = python3,kivy==2.3.0,https://github.com/kivymd/KivyMD/archive/master.zip,materialyoucolor,asynckivy,asyncgui,pillow,sqlite3,plyer,android,jnius
+# comma separated e.g. requirements = sqlite3,kivy
+# 关键修正：
+# 1. 新增 requests (用于调用云端 OCR/AI 接口)
+# 2. 保留 KivyMD 2.0 全套依赖 (materialyoucolor, asynckivy, asyncgui)
+requirements = python3,kivy==2.3.0,https://github.com/kivymd/KivyMD/archive/master.zip,materialyoucolor,asynckivy,asyncgui,pillow,sqlite3,plyer,android,jnius,requests
 
 # (str) Custom source folders for requirements
 # requirements.source.kivymd = ../../kivymd
@@ -36,7 +36,6 @@ requirements = python3,kivy==2.3.0,https://github.com/kivymd/KivyMD/archive/mast
 # icon.filename = %(source.dir)s/assets/icon.png
 
 # (str) Supported orientation (one of landscape, sensorLandscape, portrait or all)
-# 关键修正：强制竖屏
 orientation = portrait
 
 # (list) List of service to declare
@@ -57,8 +56,7 @@ fullscreen = 0
 android.presplash_color = #FFFFFF
 
 # (list) Permissions
-# (list) Permissions
-# 关键修正：Android 13+ 必须要有 READ_MEDIA_IMAGES 才能选图
+# 关键修正：包含 Android 13 媒体权限 和 网络权限
 android.permissions = CAMERA,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE,INTERNET,RECORD_AUDIO,READ_MEDIA_IMAGES
 
 # (int) Target Android API, should be as high as possible.
@@ -144,6 +142,20 @@ android.allow_backup = True
 
 # (str) The format used to package the app for debug mode (apk or aar).
 # android.debug_artifact = apk
+
+# -------------------------------------------------------------------------
+# 关键修正 A：添加资源路径
+# 将本地 res 目录打包进 APK，供 AndroidManifest 使用
+# -------------------------------------------------------------------------
+android.add_resources = res
+
+# -------------------------------------------------------------------------
+# 关键修正 B：注册 FileProvider
+# 解决 Android 7.0+ 相机调用崩溃问题 (FileUriExposedException)
+# authorities 必须匹配 package.domain + . + package.name + .fileprovider
+# -------------------------------------------------------------------------
+android.manifest_provider = <provider android:name="androidx.core.content.FileProvider" android:authorities="org.elderly.medical_helper.fileprovider" android:exported="false" android:grantUriPermissions="true"><meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/provider_paths" /></provider>
+
 
 #
 # Python for android (p4a) specific
