@@ -14,7 +14,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 1. 清理空间
       - name: Free Disk Space
         uses: jlumbroso/free-disk-space@main
         with:
@@ -26,20 +25,17 @@ jobs:
           docker-images: true
           swap-storage: true
 
-      # 2. 设置 Java 17
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # 3. 设置 Python 3.10
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      # 4. 安装系统依赖
       - name: Install System Dependencies
         run: |
           sudo apt-get update
@@ -57,21 +53,18 @@ jobs:
             libtool \
             zlib1g-dev
 
-      # 5. 安装 Buildozer 和 Cython
-      # 【关键修正】移除 "cython<3" 限制。Kivy 2.3.0 需要 Cython 3.0+
       - name: Install Buildozer
         run: |
           pip install --upgrade pip
-          pip install buildozer cython colorama
+          # 【关键】Kivy 2.2.1 必须配合 Cython < 3 (即 0.29.x)
+          pip install buildozer "cython<3" colorama
 
-      # 6. 开始打包
       - name: Build with Buildozer
         run: |
           yes | buildozer android debug
         env:
           BUILDOZER_ALLOW_ORG_TEST_DOMAIN: 1
 
-      # 7. 上传结果
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
