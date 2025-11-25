@@ -8,15 +8,13 @@ on:
 
 jobs:
   build:
-    # 使用 Ubuntu 22.04，目前对 Android 构建支持最稳定
     runs-on: ubuntu-22.04
 
     steps:
-      # 1. 拉取代码
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. 清理磁盘空间 (Android SDK/NDK 非常大，防止空间不足报错)
+      # 1. 清理空间 (必需，防止构建中断)
       - name: Free Disk Space
         uses: jlumbroso/free-disk-space@main
         with:
@@ -28,20 +26,21 @@ jobs:
           docker-images: true
           swap-storage: true
 
-      # 3. 设置 Java 环境 (Android SDK 必需)
+      # 2. 设置 Java 17 (Android SDK 需要)
+      # 这一步会自动配置 JAVA_HOME，不需要再用 apt 安装 jdk 了
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # 4. 设置 Python 环境
+      # 3. 设置 Python 3.10
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      # 5. 安装系统级依赖库 (Buildozer 编译需要的 Linux 库)
+      # 4. 安装系统依赖 (已修正拼写，并移除了冗余的 jdk)
       - name: Install System Dependencies
         run: |
           sudo apt-get update
@@ -57,27 +56,24 @@ jobs:
             autoconf \
             autotools-dev \
             libtool \
-            zlib1g-dev \
-            openjd-17-jdk
+            zlib1g-dev
 
-      # 6. 安装 Buildozer 和 Python 依赖
+      # 5. 安装 Buildozer
       - name: Install Buildozer
         run: |
           pip install --upgrade pip
-          pip install buildozer cython
-          # 也可以安装 colorama 让日志好看点，非必需
-          pip install colorama
+          pip install buildozer cython colorama
 
-      # 7. 开始打包 (核心步骤)
-      # 使用 'yes |' 自动同意 Android SDK 的 License 协议，防止卡住
+      # 6. 开始打包
+      # 首次运行会自动下载 Android SDK/NDK，比较慢，请耐心等待
       - name: Build with Buildozer
         run: |
           yes | buildozer android debug
         env:
-          # 允许使用测试域名 (org.elderly)
+          # 允许使用测试域名 (org.elderly) 避免报错
           BUILDOZER_ALLOW_ORG_TEST_DOMAIN: 1
 
-      # 8. 上传生成的 APK
+      # 7. 上传结果
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
