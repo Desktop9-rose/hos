@@ -1,4 +1,5 @@
 [app]
+
 # (str) Title of your application
 title = 医疗解读助手
 
@@ -16,15 +17,15 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,otf,ttf,ini,xml
 
 # (str) Application versioning (method 1)
-version = 1.0.2
+version = 1.0.3
 
 # (list) Application requirements
-# 核心组合：
-# 1. kivy==2.2.1 (稳定)
-# 2. kivymd (master分支，2.0版本)
-# 3. 移除了 pillow (防闪退)
-# 4. 添加了 requests (云端API)
-requirements = python3,kivy==2.2.1,https://github.com/kivymd/KivyMD/archive/master.zip,materialyoucolor,asynckivy,asyncgui,sqlite3,plyer,android,jnius,requests
+# 融合策略：
+# 1. Kivy 2.2.1 (稳定基石)
+# 2. KivyMD 2.0 + 全套隐形依赖 (materialyoucolor, asynckivy, asyncgui)
+# 3. requests (云端能力)
+# 4. pillow (虽然之前说移除，但既然成功案例用了NDK 25b，Pillow其实是可以兼容的，加上防万一)
+requirements = python3,kivy==2.2.1,https://github.com/kivymd/KivyMD/archive/master.zip,materialyoucolor,asynckivy,asyncgui,pillow,sqlite3,plyer,android,jnius,requests
 
 # (str) Presplash of the application
 presplash.filename = %(source.dir)s/assets/presplash.png
@@ -44,28 +45,35 @@ android.presplash_color = #FFFFFF
 # (list) Permissions
 android.permissions = CAMERA,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE,INTERNET,RECORD_AUDIO,READ_MEDIA_IMAGES
 
-# (int) Target Android API, should be as high as possible.
+# (int) Target Android API
 android.api = 33
 
 # (int) Minimum API your APK will support.
-android.minapi = 21
+android.minapi = 24
 
-# (bool) If True, then automatically accept SDK license agreements.
+# -------------------------------------------------------------------------
+# 🏆 核心“抄作业”配置：锁定构建工具链版本
+# 这能解决 90% 的莫名其妙构建失败问题
+# -------------------------------------------------------------------------
+android.build_tools_version = 34.0.0
+android.ndk = 25b
 android.accept_sdk_license = True
 
 # (str) The Android arch to build for
 android.archs = arm64-v8a, armeabi-v7a
 
-# (bool) Enable AndroidX support.
-# 【关键修正】KivyMD 2.0 必须开启此选项，否则构建失败
+# (bool) Enable AndroidX support. (KivyMD 2.0 必须)
 android.enable_androidx = True
 
-# (list) Gradle dependencies to add
-# 【关键修正】确保 AndroidX 核心库存在
+# (list) Gradle dependencies to add (确保 FileProvider 类存在)
 android.gradle_dependencies = androidx.core:core:1.6.0
 
-# (str) Android add resources
+# (str) Android add resources (映射 XML 配置)
 android.add_resources = res
+
+# (str) Android entry point
+android.entrypoint = org.kivy.android.PythonActivity
+
 
 [buildozer]
 
