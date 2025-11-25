@@ -13,20 +13,17 @@ class FileHandler:
             os.makedirs(self.images_dir)
 
     def _get_app_dir(self):
-        """获取 APP 私有存储路径 (兼容 Android & PC)"""
         if platform == 'android':
             from jnius import autoclass
             PythonActivity = autoclass('org.kivy.android.PythonActivity')
             context = PythonActivity.mActivity
-            # 获取 /Android/data/package_name/files/
-            file_path = context.getExternalFilesDir(None).getAbsolutePath()
-            return file_path
+            # 获取 APP 私有文件目录: /data/user/0/xxx/files/
+            return context.getExternalFilesDir(None).getAbsolutePath()
         else:
-            # PC 端保存到当前目录下的 app_data 文件夹
+            # PC 端
             base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             data_dir = os.path.join(base_dir, 'app_data_storage')
-            if not os.path.exists(data_dir):
-                os.makedirs(data_dir)
+            if not os.path.exists(data_dir): os.makedirs(data_dir)
             return data_dir
 
     def save_selected_image(self, source_path):
