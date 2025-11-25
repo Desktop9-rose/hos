@@ -1,8 +1,11 @@
+import os
+from datetime import datetime
 from kivy.uix.screenmanager import Screen
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.widget import MDWidget
 from kivy.utils import platform
-from plyer import filechooser
+from kivy.clock import Clock
+from plyer import filechooser, camera
 
 from ui.components import ElderButton, ElderLabel
 from utils.file_handler import file_handler
@@ -14,25 +17,14 @@ class HomeScreen(Screen):
         super().__init__(**kwargs)
         self.name = 'home'
         self.build_ui()
-        # 启动时尝试申请权限
-        check_permissions()
+        # 延迟申请权限
+        Clock.schedule_once(lambda dt: check_permissions(), 1)
 
     def build_ui(self):
-        layout = MDBoxLayout(
-            orientation='vertical',
-            padding=[40, 60, 40, 40],
-            spacing=40,
-            md_bg_color=(0.96, 0.96, 0.96, 1)
-        )
-
-        title = ElderLabel(
-            text="医疗报告解读助手",
-            halign="center",
-            size_hint_y=None,
-            height="100dp",
-            font_style="Headline",
-            role="medium"
-        )
+        layout = MDBoxLayout(orientation='vertical', padding=[40, 60, 40, 40], spacing=40,
+                             md_bg_color=(0.96, 0.96, 0.96, 1))
+        title = ElderLabel(text="医疗报告解读助手", halign="center", size_hint_y=None, height="100dp",
+                           font_style="Headline", role="medium")
 
         btn_camera = ElderButton(text="📷 拍照解读")
         btn_camera.bind(on_release=self.go_camera)
@@ -48,55 +40,58 @@ class HomeScreen(Screen):
         layout.add_widget(btn_gallery)
         layout.add_widget(btn_history)
         layout.add_widget(MDWidget(size_hint_y=1))
-
         self.add_widget(layout)
 
+    # --- 核心逻辑：拍照 ---
     def go_camera(self, instance):
-        """
-        拍照功能
-        注：在PC上我们用文件选择模拟，在Android上理想情况调用相机Intent。
-        为了简化开发，这里统一先调文件选择器，
-        后续阶段我们可以集成 Kivy Camera 组件。
-        """
-        print("启动相机逻辑...")
-        if platform == 'android':
-            # 安卓端通常调用原生相机比较复杂，暂时复用选图，
-            # 或者后续集成专用 Camera Screen
-            self.open_file_chooser()
-        else:
-            self.open_file_chooser()
+        print("DEBUG [Home]: 尝试启动相机...")
+        filename = datetime.now().strftime("CAM_%Y%m%d_%H%M%S.jpg")
+        # 构造临时存储路径
+        save_path = os.path.join(file_handler.app_dir, filename)
 
+        try:
+            # 调用原生相机
+            camera.take_picture(filename=save_path, on_complete=self._on_camera_complete)
+        except NotImplementedError:
+            print("DEBUG [Home]: 当前环境不支持相机 (可能是电脑)")
+            # 电脑端回退到选图
+            self.open_file_chooser()
+        except Exception as e:
+            print(f"DEBUG [Home]: 相机启动失败 -> {e}")
+
+    def _on_camera_complete(self, path):
+        # 相机回调
+        print(f"DEBUG [Home]: 拍照完成，路径 -> {path}")
+        if path and os.path.exists(path):
+            # 必须在主线程跳转
+            Clock.schedule_once(lambda dt: self._switch_to_result(path), 0)
+        else:
+            print("DEBUG [Home]: 未找到拍摄的图片")
+
+    # --- 核心逻辑：选图 ---
     def go_gallery(self, instance):
-        print("启动相册逻辑...")
         self.open_file_chooser()
 
-    def go_history(self, instance):
-        if self.manager:
-            self.manager.current = 'history'
-
     def open_file_chooser(self):
-        """调用 plyer 选择文件"""
-        # 注意：on_selection 是一个回调函数
-        filechooser.open_file(on_selection=self._on_file_selected, filters=[("Images", "*.jpg", "*.jpeg", "*.png")])
+        try:
+            filechooser.open_file(on_selection=self._on_file_selected, filters=[("Images", "*.jpg", "*.jpeg", "*.png")])
+        except Exception as e:
+            print(f"DEBUG [Home]: 打开相册失败 -> {e}")
 
     def _on_file_selected(self, selection):
-        """文件选择回调"""
-        if selection and len(selection) > 0:
-            file_path = selection[0]
-            print(f"用户选择了图片: {file_path}")
+        if not selection: return
+        file_path = selection[0]
 
-            # 1. 保存图片到私有目录
-            saved_path = file_handler.save_selected_image(file_path)
+        # 复制图片到私有目录
+        saved_path = file_handler.save_selected_image(file_path)
+        if saved_path:
+            Clock.schedule_once(lambda dt: self._switch_to_result(saved_path), 0)
 
-            if saved_path:
-                # 2. 跳转到结果页进行处理 (传递图片路径)
-                self.switch_to_result(saved_path)
-            else:
-                print("图片保存失败")
+    def _switch_to_result(self, path):
+        self.manager.get_screen('result').set_image(path)
+        self.manager.current = 'result'
 
-    def switch_to_result(self, image_path):
-        if self.manager:
-            # 获取 ResultScreen 实例并传递数据
-            result_screen = self.manager.get_screen('result')
-            result_screen.set_image(image_path)
-            self.manager.current = 'result'
+    def go_history(self, instance):
+        # 切换前刷新数据
+        self.manager.get_screen('history').load_data()
+        self.manager.current = 'history'
