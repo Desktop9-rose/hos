@@ -57,7 +57,9 @@ fullscreen = 0
 android.presplash_color = #FFFFFF
 
 # (list) Permissions
-android.permissions = CAMERA,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE,INTERNET,RECORD_AUDIO
+# (list) Permissions
+# 关键修正：Android 13+ 必须要有 READ_MEDIA_IMAGES 才能选图
+android.permissions = CAMERA,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE,INTERNET,RECORD_AUDIO,READ_MEDIA_IMAGES
 
 # (int) Target Android API, should be as high as possible.
 android.api = 33
